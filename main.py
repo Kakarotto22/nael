@@ -27,12 +27,5 @@ leech_handler = MessageHandler(
 )
 app.add_handler(leech_handler)
 #
-edited_message_handler = MessageHandler(
-	edited_message,
-	filters=Filters.edited & Filters.text
-)
-app.add_handler(edited_message_handler)
-#
-#
 print("Bot Is Running")
 app.run()  # Automatically start() and idle()
