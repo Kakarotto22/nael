@@ -3,11 +3,7 @@ from time import sleep
 app = Client("short_link")
 
 
-def edited_message(client, message):
-	print(message)
-
 def leech(client, message):
-	print(message)
 	file_name = message.document.file_name
 	msg_id = message.message_id
 	if file_name == "sites.txt":
@@ -38,4 +34,5 @@ edited_message_handler = MessageHandler(
 app.add_handler(edited_message_handler)
 #
 #
+print("Bot Is Running")
 app.run()  # Automatically start() and idle()
