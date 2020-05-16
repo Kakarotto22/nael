@@ -39,19 +39,19 @@ def main(client,message):
 	except:
 		pass
 	data = table.find_one(id=1)["data"]
-	if text and text == "download":
+	if text and text == "download" and message.from_user.id in sudoers:
 		message.reply_text("Now Send URL files")
 		table.update(dict(id=1, data="URL_file"), ["id"])
-	elif message.document and data == "URL_file":
+	elif message.document and data == "URL_file" and message.from_user.id in sudoers:
 		message.download(file_name="links.txt")
 		message.reply_text("Now Send Caption file")
 		table.update(dict(id=1, data="caption_file"), ["id"])
-	elif message.document and data == "caption_file":
+	elif message.document and data == "caption_file" and message.from_user.id in sudoers:
 		message.download(file_name="caption.txt")
 		message.reply_text("Ok start Downloading")
 		table.update(dict(id=1, data="None"), ["id"])
 		leech(client,message)
-	if message.text == "/reset":
+	if message.text == "/reset" and message.from_user.id in sudoers:
 		message.reply_text("Caption Line Was reset")
 		table.update(dict(id=1, cl=0), ["id"])
 
