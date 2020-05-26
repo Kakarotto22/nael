@@ -14,26 +14,17 @@ def info(e_n):
 	data = table.find_one(e_n=e_n)
 	return data
 
-def get_desc(e_n,text=""):
-	if text == "":
-		data = table.find_one(e_n=e_n)
-		return data["desc"]
-	else:
-		table.update(dict(e_n=e_n, desc="{}".format(text)), ["e_n"])
+def get_desc(e_n):
+	data = table.find_one(e_n=e_n)
+	return data["desc"]
 
-def get_vid(e_n,text=""):
-	if text == "":
-		data = table.find_one(e_n=e_n)
-		return data["vid"]
-	else:
-		table.update(dict(e_n=e_n, vid="{}".format(text)), ["e_n"])
+def get_vid(e_n):
+	data = table.find_one(e_n=e_n)
+	return data["vid"]
 
 def get_fref(e_n,text=""):
-	if text == "":
-		data = table.find_one(e_n=e_n)
-		return data["file_ref"]
-	else:
-		table.update(dict(e_n=e_n, file_ref="{}".format(text)), ["e_n"])
+	data = table.find_one(e_n=e_n)
+	return data["file_ref"]
 
 def add_video(e_n,desc,vid,file_ref):
 	table.insert(dict(e_n=e_n,desc=desc,vid=vid,file_ref=file_ref))
@@ -49,10 +40,11 @@ def video_list():
 def gde(text):
 	text = text.replace("[Blkom.com] ","")
 	text = text.replace(".mp4","")
+	text = text.replace(".1","")
 	desc = text.replace("Ep","0")
 	e_n = text.replace(" [480p]","")
 	e_n = e_n.replace(" [360p]","")
-	e_n = e_n.replace(".1","")
+	e_n = e_n.replace(" [720p]","")
 	e_n = e_n.split("Ep")
 	e_n = e_n[1]
 	return desc,e_n
@@ -73,6 +65,13 @@ def get_channel_id(text=""):
 		return data["channel_id"]
 	else:
 		download_table.update(dict(id=1, channel_id=text), ["id"])
+
+def get_subdesc(text=""):
+	if text == "":
+		data = download_table.find_one(id=1)
+		return data["sub_desc"]
+	else:
+		download_table.update(dict(id=1, sub_desc=text), ["id"])
 
 def get_main_delay(text=""):
 	if text == "":
@@ -102,34 +101,38 @@ def get_qualty(text=""):
 	else:
 		download_table.update(dict(id=1, qualty=text), ["id"])
 
+def get_en(text=""):
+	if text == "":
+		data = download_table.find_one(id=1)
+		return data["e_n"]
+	else:
+		download_table.update(dict(id=1, e_n=text), ["id"])
+
 def get_link(link,qualty):
-	r = requests.get(link).text
-	page = r.split("\n")
-	line = r.split("\n")
-	for element in line:
-		if qualty == 360:
-			if "360p <small>" in element or "360 <small>" in element:
-				line = line.index(element)
-		elif qualty == 480:
-			if "480p <small>" in element or "480 <small>" in element:
-				line = line.index(element)
-		elif qualty == 720:
-			if "720p <small>" in element or "720 <small>" in element:
-				line = line.index(element)
-	line = int(line)-1
-	link = page[line]
-	link = link.replace('<a href="','')
-	link = link.replace('" class="btn btn-default" title="Fansub">','')
-	return link
+	try:
+		r = requests.get(link).text
+		page = r.split("\n")
+		line = r.split("\n")
+		for element in line:
+			if qualty == 360:
+				if "360p <small>" in element or "360 <small>" in element:
+					line = line.index(element)
+			elif qualty == 480:
+				if "480p <small>" in element or "480 <small>" in element:
+					line = line.index(element)
+			elif qualty == 720:
+				if "720p <small>" in element or "720 <small>" in element:
+					line = line.index(element)
+		line = int(line)-1
+		link = page[line]
+		link = link.replace('<a href="','')
+		link = link.replace('" class="btn btn-default" title="Fansub">','')
+		return link
+	except:
+		pass
 
 
-
-
-
-
-
-
-
+	
 
 
 
