@@ -1,170 +1,136 @@
-from pyrogram import *
+import dataset
+import requests
 from time import sleep
-from db import *
 
-app = Client("forward")
+db = dataset.connect("sqlite:///data.db")
+table = db['data']
+download_table = db["download_data"]
 
-sudoers = [183924118,1060779034]
+data = download_table.find_one(id=1)
+if data == None:
+	table.insert(dict(id=1,url=None,channel_id=-1001413874309,main_delay=300,sub_delay=5,data=None,qualty=360))
 
-def forward(client,message):
-	caption = message.caption
-	vid = message.video.file_id
-	file_ref = message.video.file_ref
-	desc , e_n = gde(caption)
-	add_video(e_n,desc,vid,file_ref)
+def info(e_n):
+	data = table.find_one(e_n=e_n)
+	return data
+
+def get_desc(e_n):
+	data = table.find_one(e_n=e_n)
+	return data["desc"]
+
+def get_vid(e_n):
+	data = table.find_one(e_n=e_n)
+	return data["vid"]
+
+def get_fref(e_n,text=""):
+	data = table.find_one(e_n=e_n)
+	return data["file_ref"]
+
+def add_video(e_n,desc,vid,file_ref):
+	table.insert(dict(e_n=e_n,desc=desc,vid=vid,file_ref=file_ref))
+
+def video_list():
+	data = table.all()
+	videos = []
+	for row in data:
+		videos.append(row["e_n"])
+	return videos
 
 
-def main(client,message):
+def gde(text):
+	text = text.replace("[Blkom.com] ","")
+	text = text.replace(".mp4","")
+	text = text.replace(".1","")
+	desc = text.replace("Ep","0")
+	e_n = text.replace(" [480p]","")
+	e_n = e_n.replace(" [360p]","")
+	e_n = e_n.replace(" [720p]","")
+	e_n = e_n.split("انتهى")
+	e_n = e_n[0]
+	return desc,e_n
+
+def reset_data():
+	table.delete()	
+	
+def get_data(text=""):
+	if text == "":
+		data = download_table.find_one(id=1)
+		return data["data"]
+	else:
+		download_table.update(dict(id=1, data=text), ["id"])
+
+def get_channel_id(text=""):
+	if text == "":
+		data = download_table.find_one(id=1)
+		return data["channel_id"]
+	else:
+		download_table.update(dict(id=1, channel_id=text), ["id"])
+
+def get_subdesc(text=""):
+	if text == "":
+		data = download_table.find_one(id=1)
+		return data["sub_desc"]
+	else:
+		download_table.update(dict(id=1, sub_desc=text), ["id"])
+
+def get_main_delay(text=""):
+	if text == "":
+		data = download_table.find_one(id=1)
+		return data["main_delay"]
+	else:
+		download_table.update(dict(id=1, main_delay=text), ["id"])
+
+def get_sub_delay(text=""):
+	if text == "":
+		data = download_table.find_one(id=1)
+		return data["sub_delay"]
+	else:
+		download_table.update(dict(id=1, sub_delay=text), ["id"])
+
+def get_url(text=""):
+	if text == "":
+		data = download_table.find_one(id=1)
+		return data["url"]
+	else:
+		download_table.update(dict(id=1, url=text), ["id"])
+
+def get_qualty(text=""):
+	if text == "":
+		data = download_table.find_one(id=1)
+		return data["qualty"]
+	else:
+		download_table.update(dict(id=1, qualty=text), ["id"])
+
+def get_en(text=""):
+	if text == "":
+		data = download_table.find_one(id=1)
+		return data["e_n"]
+	else:
+		download_table.update(dict(id=1, e_n=text), ["id"])
+
+def get_link(link,qualty):
 	try:
-		text = message.text
+		r = requests.get(link).text
+		page = r.split("\n")
+		line = r.split("\n")
+		for element in line:
+			if qualty == 360:
+				if "360p <small>" in element or "360 <small>" in element:
+					line = line.index(element)
+			elif qualty == 480:
+				if "480p <small>" in element or "480 <small>" in element:
+					line = line.index(element)
+			elif qualty == 720:
+				if "720p <small>" in element or "720 <small>" in element:
+					line = line.index(element)
+		line = int(line)-1
+		link = page[line]
+		link = link.replace('<a href="','')
+		link = link.replace('" class="btn btn-default" title="Fansub">','')
+		return link
 	except:
 		pass
-	chat_id = message.chat.id
-	user_id = message.from_user.id
-	data = get_data()
-	if text and text =="تحميل" and user_id in sudoers:
-		message.reply_text("ارسل الان الرابط")
-		get_data("URL")
-	elif text and data == "URL" and user_id in sudoers:
-		get_url(text)
-		message.reply_text("ارسل الان رقم الحلقة التي سابدا منها")
-		get_data("e_n1")
-	elif text and data == "e_n1" and user_id in sudoers:
-		get_en(text)
-		message.reply_text("ارسل الان رقم الحلقة التي ساتوقف عندها")
-		get_data("e_n2")
-	elif text and data == "e_n2" and user_id in sudoers:
-		get_data("None")
-		link = get_url()
-		e_n = text
-		i  = int(get_en())
-		qualty = get_qualty()
-		while i < int(e_n)+1:
-			main_delay = get_main_delay()
-			url = get_link(f"{link}{i}",qualty)
-			if url != None:
-				msg = app.send_message(chat_id,f"{url}")
-				msg.reply_text("/leech")
-			i += 1
-			if i+3 < int(e_n)+1:
-				sub_delay = get_sub_delay()
-				sleep(int(sub_delay))
-				url = get_link(f"{link}{i}",qualty)
-				if url != None:
-					msg = app.send_message(chat_id,f"{url}")
-					msg.reply_text("/leech")
-				i += 1
-				sleep(int(sub_delay))
-				url = get_link(f"{link}{i}",qualty)
-				if url != None:
-					msg = app.send_message(chat_id,f"{url}")
-					msg.reply_text("/leech")
-				i += 1
-				sleep(int(sub_delay))
-				url = get_link(f"{link}{i}",qualty)
-				if url != None:
-					msg = app.send_message(chat_id,f"{url}")
-					msg.reply_text("/leech")
-				i += 1
-			sleep(int(main_delay))
-		app.send_message(chat_id,"Download Finished")
-	elif text == "ارسال" and user_id in sudoers:
-		videos = video_list()
-		videos = sorted(videos)
-		msg = message.reply("جارٍ الإرسال...")
-		for video in videos:
-			vid = get_vid(video)
-			desc = get_desc(video)
-			file_ref = get_fref(video)
-			subdesc = get_subdesc()
-			app.send_video(chat_id=int(get_channel_id()),video=vid,file_ref=file_ref,caption=desc+"\n"+subdesc)
-			sleep(3)
-		msg.edit_text("All videos was send")
-		reset_data()
-	elif text.lower() == "review":
-		videos = video_list()
-		print(videos)
-		videos = sorted(videos)
-		msg = f"You have {len(videos)} videos to send:"
-		i = 1
-		for video in videos:
-			desc = get_desc(video)
-			msg += f"\n{i} {desc}"
-			i += 1
-		if len(msg) < 4096:
-			message.reply(msg)
-		else:
-			res_first, res_second = msg[:len(msg)//2],msg[len(msg)//2:]
-			msg.reply(res_first)
-			msg.reply(res_second)
-	elif text == "/subdesc":
-		desc = get_subdesc()
-		message.reply(f"Sub Descrption is : `{desc}`\nYou can Change it just send /setsubdesc")
-	elif text == "/qualty":
-		qualty = get_qualty()
-		message.reply(f"Qualty is : `{qualty}`\nYou can Change it just send /setqualty")
-	elif text == "/channel":
-		channel_id = get_channel_id()
-		message.reply(f"Channel id is : `{channel_id}`\nYou can Change it just send /setchannel")
-	elif text == "/maindelay":
-		main_delay = get_main_delay()
-		message.reply(f"Main delay is : `{main_delay}`\nYou can Change it just send /setmaindelay")
-	elif text == "/subdelay":
-		sub_delay = get_sub_delay()
-		message.reply(f"Sub delay is : `{sub_delay}`\nYou can Change it just send /setsubdelay")
-	elif text == "/setsubdesc":
-		message.reply("Please Send New Sub Descreption")
-		get_data("change_subdesc")
-	elif text == "/setqualty":
-		message.reply("Please Send New qualty\nLike This : \n360")
-		get_data("change_qualty")
-	elif text == "/setchannel":
-		message.reply("Please Send New Channel id\nLike This : \n-10082838028")
-		get_data("change_channel")
-	elif text == "/setmaindelay":
-		message.reply("Please Send New Main Delay\nLike This : \n5 Delay for 5 Second")
-		get_data("change_main_delay")
-	elif text == "/setsubdelay":
-		message.reply("Please Send New Sub Delay\nLike This : \n5 Delay for 5 Second")
-		get_data("change_sub_delay")
-	elif text and data == "change_subdesc" and user_id in sudoers:
-		get_data("None")
-		get_subdesc(text)
-		message.reply("Sub Descreption Was changed")
-	elif text and data == "change_qualty" and user_id in sudoers:
-		get_data("None")
-		get_qualty(text)
-		message.reply("Qualty Was changed")
-	elif text and data == "change_channel" and user_id in sudoers:
-		get_data("None")
-		get_channel_id(text)
-		message.reply("Channel Was changed")
-	elif text and data == "change_main_delay" and user_id in sudoers:
-		get_data("None")
-		get_main_delay(text)
-		message.reply("Main delay Was changed")
-	elif text and data == "change_sub_delay" and user_id in sudoers:
-		get_data("None")
-		get_sub_delay(text)
-		message.reply("Sub delay Was changed")
-
-
-#
-main_handler = MessageHandler(
-	main,
-	filters=Filters.document | Filters.text
-)
-app.add_handler(main_handler)
-#
-forward_handler = MessageHandler(
-	forward,
-	filters=Filters.video
-)
-app.add_handler(forward_handler)
-#
 
 
 
 
-
-app.run()  # Automatically start() and idle()
