@@ -45,8 +45,8 @@ def gde(text):
 	e_n = text.replace(" [480p]","")
 	e_n = e_n.replace(" [360p]","")
 	e_n = e_n.replace(" [720p]","")
-	e_n = e_n.split("Ep")
-	e_n = e_n[1]
+	e_n = e_n.split("انتهى")
+	e_n = e_n[0]
 	return desc,e_n
 
 def reset_data():
@@ -130,15 +130,3 @@ def get_link(link,qualty):
 		return link
 	except:
 		pass
-
-
-	
-
-
-
-
-
-
-
-
-
