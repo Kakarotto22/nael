@@ -68,6 +68,9 @@ def main(client,message):
 				i += 1
 			sleep(int(main_delay))
 		app.send_message(chat_id,"Download Finished")
+	elif text == "حذف" and user_id in sudoers:
+		reset_data()
+		msg = message.reply("تمّ إفراغ قاعدة البيانات")
 	elif text == "ارسال" and user_id in sudoers:
 		videos = video_list()
 		videos = sorted(videos)
