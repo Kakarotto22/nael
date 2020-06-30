@@ -40,13 +40,14 @@ def video_list():
 def gde(text):
 	text = text.replace("[Blkom.com] ","")
 	text = text.replace(".mp4","")
+	text = text.split(".mp4")[0]
 	text = text.replace(".1","")
 	desc = text.replace("Ep","0")
 	e_n = text.replace(" [480p]","")
 	e_n = e_n.replace(" [360p]","")
 	e_n = e_n.replace(" [720p]","")
-	e_n = e_n.split("انتهى")
-	e_n = e_n[0]
+	e_n = e_n.split(Ep")
+	e_n = e_n[1]
 	return desc,e_n
 
 def reset_data():
