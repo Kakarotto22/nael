@@ -39,7 +39,6 @@ def video_list():
 
 def gde(text):
 	text = text.replace("[Blkom.com] ","")
-	text = text.replace(".mp4","")
 	text = text.split(".mp4")[0]
 	text = text.replace(".1","")
 	desc = text.replace("Ep","0")
